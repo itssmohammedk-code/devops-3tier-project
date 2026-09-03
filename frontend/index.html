@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps 3-Tier Application</title>
+</head>
+<body>
+
+    <h1>DevOps 3-Tier Application</h1>
+
+    <p id="status">Checking backend...</p>
+
+    <script>
+        fetch("http://localhost:3000/health")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("status").textContent =
+                    "Backend Status: " + data.status;
+            })
+            .catch(error => {
+                document.getElementById("status").textContent =
+                    "Backend is unavailable";
+            });
+    </script>
+
+</body>
+</html>
