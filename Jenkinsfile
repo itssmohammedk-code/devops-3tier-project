@@ -1,11 +1,13 @@
 pipeline {
     agent any
+
     stages {
         stage('Checkout') {
             steps {
                 echo 'Source code checked out from GitHub'
             }
         }
+
         stage('Verify Project') {
             steps {
                 sh 'git rev-parse --short HEAD'
@@ -17,16 +19,37 @@ pipeline {
                 echo 'Project structure verified successfully'
             }
         }
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    def scannerHome = tool 'SonarScanner'
+
+                    withSonarQubeEnv('SonarQube') {
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                              -Dsonar.projectKey=devops-3tier-project \
+                              -Dsonar.projectName=devops-3tier-project \
+                              -Dsonar.sources=. \
+                              -Dsonar.exclusions=**/node_modules/**,**/.terraform/**,**/terraform.lock.hcl
+                        """
+                    }
+                }
+            }
+        }
+
         stage('CI Test') {
             steps {
                 echo 'CI validation completed successfully'
             }
         }
     }
+
     post {
         success {
             echo 'DevOps 3-Tier CI Pipeline completed successfully!'
         }
+
         failure {
             echo 'CI Pipeline failed.'
         }
