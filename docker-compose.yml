@@ -1,0 +1,31 @@
+services:
+
+  backend:
+    build: ./backend
+    container_name: devops-backend
+    environment:
+      DB_HOST: database
+      DB_USER: devopsuser
+      DB_PASSWORD: devopspassword
+      DB_NAME: devopsdb
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build: ./frontend
+    container_name: devops-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  database:
+    image: mysql:8.0
+    container_name: devops-database
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: devopsdb
+      MYSQL_USER: devopsuser
+      MYSQL_PASSWORD: devopspassword
+    ports:
+      - "3307:3306"

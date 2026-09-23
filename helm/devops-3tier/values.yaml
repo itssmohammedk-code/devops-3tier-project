@@ -1,0 +1,21 @@
+frontend:
+  replicaCount: 2
+  image:
+    repository: 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend
+    tag: latest
+
+backend:
+  replicaCount: 2
+  image:
+    repository: 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend
+    tag: latest
+
+mysql:
+  image:
+    repository: mysql
+    tag: "8.0"
+  storage: 5Gi
+  database: devopsdb
+  user: devopsuser
+  password: devopspassword
+  rootPassword: rootpassword

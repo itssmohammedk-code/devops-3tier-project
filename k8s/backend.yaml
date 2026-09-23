@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DB_HOST
+              value: mysql
+            - name: DB_USER
+              value: devopsuser
+            - name: DB_PASSWORD
+              value: devopspassword
+            - name: DB_NAME
+              value: devopsdb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: app
+spec:
+  type: ClusterIP
+  selector:
+    app: backend
+  ports:
+    - port: 3000
+      targetPort: 3000

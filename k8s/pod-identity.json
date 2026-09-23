@@ -1,0 +1,6 @@
+[
+  {
+    "serviceAccount": "ebs-csi-controller-sa",
+    "roleArn": "arn:aws:iam::546359740762:role/devops-eks-ebs-csi-role"
+  }
+]
