@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     stages {
+
         stage('Checkout') {
             steps {
                 echo 'Source code checked out from GitHub'
@@ -35,6 +36,20 @@ pipeline {
                         """
                     }
                 }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    docker build \
+                      -t 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend:latest \
+                      ./backend
+
+                    docker build \
+                      -t 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend:latest \
+                      ./frontend
+                '''
             }
         }
 
