@@ -1,8 +1,11 @@
 pipeline {
     agent any
 
-    stages {
+    environment {
+        DOCKER_HOST = 'tcp://host.docker.internal:2375'
+    }
 
+    stages {
         stage('Checkout') {
             steps {
                 echo 'Source code checked out from GitHub'
