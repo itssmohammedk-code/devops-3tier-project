@@ -11,14 +11,7 @@ pipeline {
                 echo 'Source code checked out from GitHub'
             }
         }
-	stage('AWS Credential Test') {
-    steps {
-        withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
-            sh 'aws sts get-caller-identity'
-        }
-    }
-}
-
+	
         stage('Verify Project') {
             steps {
                 sh 'git rev-parse --short HEAD'
@@ -71,6 +64,23 @@ pipeline {
             trivy image --severity CRITICAL --exit-code 1 \
               546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend:latest
         '''
+    }
+}
+	stage('Push Images to ECR') {
+    steps {
+        withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
+            sh '''
+                aws ecr get-login-password --region us-east-1 | \
+                docker login --username AWS --password-stdin \
+                546359740762.dkr.ecr.us-east-1.amazonaws.com
+
+                docker push \
+                546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend:latest
+
+                docker push \
+                546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend:latest
+            '''
+        }
     }
 }
 
