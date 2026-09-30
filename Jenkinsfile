@@ -11,6 +11,13 @@ pipeline {
                 echo 'Source code checked out from GitHub'
             }
         }
+	stage('AWS Credential Test') {
+    steps {
+        withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
+            sh 'aws sts get-caller-identity'
+        }
+    }
+}
 
         stage('Verify Project') {
             steps {
