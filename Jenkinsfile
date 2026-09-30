@@ -55,6 +55,17 @@ pipeline {
                 '''
             }
         }
+	stage('Trivy Scan') {
+    steps {
+        sh '''
+            trivy image --severity CRITICAL --exit-code 1 \
+              546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend:latest
+
+            trivy image --severity CRITICAL --exit-code 1 \
+              546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend:latest
+        '''
+    }
+}
 
         stage('CI Test') {
             steps {
