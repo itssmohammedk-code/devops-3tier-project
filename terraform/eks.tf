@@ -31,7 +31,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
 resource "aws_eks_cluster" "main" {
   name     = "devops-3tier-eks"
   role_arn = aws_iam_role.eks_cluster_role.arn
-  version  = "1.34"
+  version  = "1.36"
 
   vpc_config {
     subnet_ids = [
@@ -40,6 +40,7 @@ resource "aws_eks_cluster" "main" {
     ]
 
     endpoint_public_access = true
+    public_access_cidrs    = var.cluster_endpoint_public_access_cidrs
   }
 
   depends_on = [
@@ -134,4 +135,52 @@ output "eks_cluster_endpoint" {
 
 output "eks_node_group_name" {
   value = aws_eks_node_group.main.node_group_name
+}
+
+variable "cluster_endpoint_public_access_cidrs" {
+  description = "Public IPv4 CIDRs allowed to reach the EKS API endpoint. Pass your current public IP as a /32; never use 0.0.0.0/0."
+  type        = list(string)
+}
+
+# EKS Pod Identity Agent is required before a Pod Identity association can be used.
+resource "aws_eks_addon" "pod_identity_agent" {
+  cluster_name = aws_eks_cluster.main.name
+  addon_name   = "eks-pod-identity-agent"
+}
+
+resource "aws_iam_role" "ebs_csi" {
+  name = "devops-eks-ebs-csi-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "pods.eks.amazonaws.com" }
+      Action    = ["sts:AssumeRole", "sts:TagSession"]
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ebs_csi" {
+  role       = aws_iam_role.ebs_csi.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+}
+
+resource "aws_eks_pod_identity_association" "ebs_csi" {
+  cluster_name    = aws_eks_cluster.main.name
+  namespace       = "kube-system"
+  service_account = "ebs-csi-controller-sa"
+  role_arn        = aws_iam_role.ebs_csi.arn
+
+  depends_on = [
+    aws_eks_addon.pod_identity_agent,
+    aws_iam_role_policy_attachment.ebs_csi
+  ]
+}
+
+resource "aws_eks_addon" "ebs_csi_driver" {
+  cluster_name = aws_eks_cluster.main.name
+  addon_name   = "aws-ebs-csi-driver"
+
+  depends_on = [aws_eks_pod_identity_association.ebs_csi]
 }

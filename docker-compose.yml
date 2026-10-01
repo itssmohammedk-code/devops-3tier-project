@@ -2,30 +2,27 @@ services:
 
   backend:
     build: ./backend
-    container_name: devops-backend
     environment:
       DB_HOST: database
-      DB_USER: devopsuser
-      DB_PASSWORD: devopspassword
-      DB_NAME: devopsdb
+      DB_USER: ${DB_USER:-devopsuser}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in your local .env file}
+      DB_NAME: ${DB_NAME:-devopsdb}
     ports:
       - "3000:3000"
 
   frontend:
     build: ./frontend
-    container_name: devops-frontend
     ports:
-      - "8080:80"
+      - "8080:8080"
     depends_on:
       - backend
 
   database:
     image: mysql:8.0
-    container_name: devops-database
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: devopsdb
-      MYSQL_USER: devopsuser
-      MYSQL_PASSWORD: devopspassword
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in your local .env file}
+      MYSQL_DATABASE: ${DB_NAME:-devopsdb}
+      MYSQL_USER: ${DB_USER:-devopsuser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in your local .env file}
     ports:
       - "3307:3306"

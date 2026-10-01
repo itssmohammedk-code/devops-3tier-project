@@ -33,15 +33,45 @@ spec:
           image: mysql:8.0
           ports:
             - containerPort: 3306
+              name: mysql
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          startupProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+            periodSeconds: 10
+            failureThreshold: 30
+          readinessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+            periodSeconds: 20
           env:
             - name: MYSQL_DATABASE
               value: devopsdb
             - name: MYSQL_USER
-              value: devopsuser
+              valueFrom:
+                secretKeyRef:
+                  name: devops-3tier-db
+                  key: mysql-user
             - name: MYSQL_PASSWORD
-              value: devopspassword
+              valueFrom:
+                secretKeyRef:
+                  name: devops-3tier-db
+                  key: mysql-password
             - name: MYSQL_ROOT_PASSWORD
-              value: rootpassword
+              valueFrom:
+                secretKeyRef:
+                  name: devops-3tier-db
+                  key: mysql-root-password
           volumeMounts:
             - name: mysql-storage
               mountPath: /var/lib/mysql

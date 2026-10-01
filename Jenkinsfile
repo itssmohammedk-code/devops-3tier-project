@@ -20,6 +20,9 @@ pipeline {
                 sh 'test -f frontend/Dockerfile'
                 sh 'test -d k8s'
                 sh 'test -d helm/devops-3tier'
+                sh 'test -f helm/devops-3tier/values-prod.yaml'
+                sh 'test -f gitops/bootstrap/application.yaml'
+                sh 'test -f README.md'
                 echo 'Project structure verified successfully'
             }
         }
@@ -45,11 +48,15 @@ pipeline {
         stage('Docker Build') {
             steps {
                 sh '''
+                    IMAGE_TAG=$(git rev-parse HEAD)
+                    echo "Building immutable image tag: $IMAGE_TAG (plus latest compatibility tag)"
                     docker build \
+                      -t 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend:$IMAGE_TAG \
                       -t 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend:latest \
                       ./backend
 
                     docker build \
+                      -t 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend:$IMAGE_TAG \
                       -t 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend:latest \
                       ./frontend
                 '''
@@ -58,11 +65,12 @@ pipeline {
 	stage('Trivy Scan') {
     steps {
         sh '''
+            IMAGE_TAG=$(git rev-parse HEAD)
             trivy image --severity CRITICAL --exit-code 1 \
-              546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend:latest
+              546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend:$IMAGE_TAG
 
             trivy image --severity CRITICAL --exit-code 1 \
-              546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend:latest
+              546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend:$IMAGE_TAG
         '''
     }
 }
@@ -70,12 +78,19 @@ pipeline {
     steps {
         withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
             sh '''
+                IMAGE_TAG=$(git rev-parse HEAD)
                 aws ecr get-login-password --region us-east-1 | \
                 docker login --username AWS --password-stdin \
                 546359740762.dkr.ecr.us-east-1.amazonaws.com
 
                 docker push \
+                546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend:$IMAGE_TAG
+
+                docker push \
                 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend:latest
+
+                docker push \
+                546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend:$IMAGE_TAG
 
                 docker push \
                 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend:latest

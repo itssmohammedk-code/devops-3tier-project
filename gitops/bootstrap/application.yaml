@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: devops-3tier
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/itssmohammedk-code/devops-3tier-project.git
+    targetRevision: main
+    path: helm/devops-3tier
+    helm:
+      valueFiles:
+        - values-prod.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: app
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: false
+    syncOptions:
+      - CreateNamespace=true

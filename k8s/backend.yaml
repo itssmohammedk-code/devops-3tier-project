@@ -13,21 +13,55 @@ spec:
       labels:
         app: backend
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: backend
           image: 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 3000
+            - name: http
+              containerPort: 3000
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: http
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
           env:
             - name: DB_HOST
               value: mysql
             - name: DB_USER
-              value: devopsuser
+              valueFrom:
+                secretKeyRef:
+                  name: devops-3tier-db
+                  key: mysql-user
             - name: DB_PASSWORD
-              value: devopspassword
+              valueFrom:
+                secretKeyRef:
+                  name: devops-3tier-db
+                  key: mysql-password
             - name: DB_NAME
               value: devopsdb
+
 ---
 apiVersion: v1
 kind: Service

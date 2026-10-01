@@ -1,0 +1,28 @@
+# Production overrides used by the Argo CD Application.
+frontend:
+  replicaCount: 2
+  service:
+    type: LoadBalancer
+  image:
+    repository: 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend
+    tag: latest
+    pullPolicy: Always
+
+backend:
+  replicaCount: 2
+  service:
+    type: ClusterIP
+  image:
+    repository: 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend
+    tag: latest
+    pullPolicy: Always
+
+mysql:
+  image:
+    repository: mysql
+    tag: "8.0"
+  storage: 5Gi
+
+metrics:
+  serviceMonitor:
+    enabled: true

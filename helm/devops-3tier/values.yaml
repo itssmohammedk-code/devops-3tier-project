@@ -1,14 +1,44 @@
 frontend:
   replicaCount: 2
+  service:
+    type: LoadBalancer
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 70
   image:
     repository: 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend
     tag: latest
+    pullPolicy: Always
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
 
 backend:
   replicaCount: 2
+  service:
+    type: ClusterIP
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 70
   image:
     repository: 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend
     tag: latest
+    pullPolicy: Always
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
 
 mysql:
   image:
@@ -16,6 +46,19 @@ mysql:
     tag: "8.0"
   storage: 5Gi
   database: devopsdb
-  user: devopsuser
-  password: devopspassword
-  rootPassword: rootpassword
+  existingSecret: devops-3tier-db
+  secretKeys:
+    user: mysql-user
+    password: mysql-password
+    rootPassword: mysql-root-password
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+metrics:
+  serviceMonitor:
+    enabled: false

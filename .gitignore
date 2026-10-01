@@ -10,6 +10,9 @@ crash.*.log
 # Environment variables
 .env
 .env.*
+!.env.example
+*.secrets.env
+database-secrets.env
 
 # Node
 node_modules/

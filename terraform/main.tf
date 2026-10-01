@@ -44,7 +44,9 @@ resource "aws_subnet" "public_1" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "devops-public-subnet-1"
+    Name                                     = "devops-public-subnet-1"
+    "kubernetes.io/cluster/devops-3tier-eks" = "shared"
+    "kubernetes.io/role/elb"                 = "1"
   }
 }
 
@@ -55,7 +57,9 @@ resource "aws_subnet" "public_2" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "devops-public-subnet-2"
+    Name                                     = "devops-public-subnet-2"
+    "kubernetes.io/cluster/devops-3tier-eks" = "shared"
+    "kubernetes.io/role/elb"                 = "1"
   }
 }
 
@@ -69,7 +73,8 @@ resource "aws_subnet" "private_1" {
   availability_zone = data.aws_availability_zones.available.names[0]
 
   tags = {
-    Name = "devops-private-subnet-1"
+    Name                                     = "devops-private-subnet-1"
+    "kubernetes.io/cluster/devops-3tier-eks" = "shared"
   }
 }
 
@@ -79,7 +84,8 @@ resource "aws_subnet" "private_2" {
   availability_zone = data.aws_availability_zones.available.names[1]
 
   tags = {
-    Name = "devops-private-subnet-2"
+    Name                                     = "devops-private-subnet-2"
+    "kubernetes.io/cluster/devops-3tier-eks" = "shared"
   }
 }
 
