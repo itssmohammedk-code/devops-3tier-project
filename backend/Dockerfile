@@ -2,7 +2,7 @@ FROM node:24-alpine
 
 WORKDIR /app
 
-RUN npm install -g npm@11
+RUN npm install -g npm@11 && npm cache clean --force
 
 COPY package*.json ./
 

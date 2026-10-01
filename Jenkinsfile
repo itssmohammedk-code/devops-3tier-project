@@ -77,24 +77,31 @@ pipeline {
 	stage('Push Images to ECR') {
     steps {
         withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
-            sh '''
-                IMAGE_TAG=$(git rev-parse HEAD)
+            script {
+                def imageTag = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+
+                sh '''
                 aws ecr get-login-password --region us-east-1 | \
                 docker login --username AWS --password-stdin \
                 546359740762.dkr.ecr.us-east-1.amazonaws.com
+                '''
 
-                docker push \
-                546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend:$IMAGE_TAG
+                retry(3) {
+                    sh "docker push 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend:${imageTag}"
+                }
 
-                docker push \
-                546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend:latest
+                retry(3) {
+                    sh 'docker push 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-backend:latest'
+                }
 
-                docker push \
-                546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend:$IMAGE_TAG
+                retry(3) {
+                    sh "docker push 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend:${imageTag}"
+                }
 
-                docker push \
-                546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend:latest
-            '''
+                retry(3) {
+                    sh 'docker push 546359740762.dkr.ecr.us-east-1.amazonaws.com/devops-frontend:latest'
+                }
+            }
         }
     }
 }
